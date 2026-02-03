@@ -9,28 +9,38 @@ jobs:
     name: JOB1
     runs-on: ubuntu-latest
     steps:
-     - name: Runnign single command in Job1
-       run: echo "job is running on first gituhb workflow"
-     - name: Checkin OS Release for Github Hosted Runner
-       run: cat /etc/os-release
-  job2:
-     name: JOB2
-     runs-on: ubuntu-latest
-     steps:
-      - name: Checking the Hostname for Runner
-        run: hostname
-      - name: Running multiple commands
-        run: |
-          echo "HI from Habeeb"
-          echo "current time is `date`"
-          sleep 20
-  job3:
-    name: JOB3
-    needs: job1
-    runs-on: ubuntu-latest
-    steps:
-      - name: Job for multiple dependencies
-        run: sleep 10
+     - name: step1
+       run: |
+        pwd
+        ls -ltr
+        hostname
+     - name: step-2 - Checkout
+       uses: actions/checkout@v5.0.0
+     - name: step-3
+       run: |
+        pwd
+        ls -ltr
+        hostname
+  #    - name: Checkin OS Release for Github Hosted Runner
+  #      run: cat /etc/os-release
+  # job2:
+  #    name: JOB2
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #     - name: Checking the Hostname for Runner
+  #       run: hostname
+  #     - name: Running multiple commands
+  #       run: |
+  #         echo "HI from Habeeb"
+  #         echo "current time is `date`"
+  #         sleep 20
+  # job3:
+  #   name: JOB3
+  #   needs: job1
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Job for multiple dependencies
+  #       run: sleep 10
 
   job4:
      name: JOB4
