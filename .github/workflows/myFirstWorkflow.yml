@@ -42,11 +42,11 @@ jobs:
   #     - name: Job for multiple dependencies
   #       run: sleep 10
 
-  job4:
-     name: JOB4
-     needs: [job1, job2, job3]
-     runs-on: ubuntu-latest
-     steps:
-        - name: Job for multiple dependencies
-          run: sleep 10
+  # job4:
+  #    name: JOB4
+  #    needs: [job1, job2, job3]
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #       - name: Job for multiple dependencies
+  #         run: sleep 10
   
