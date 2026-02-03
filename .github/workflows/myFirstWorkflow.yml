@@ -2,6 +2,10 @@ name: my-first-workflow
 #To get a trigger on every push in this repo
 on: 
   push:
+    branches:
+      - dev
+      - 'feature-*'
+      - main
 
   
 jobs:
@@ -27,26 +31,7 @@ jobs:
        with:
          name: single_file
          path: ./myartifact.txt
-     - name: Upload from directroy
-       uses: actions/upload-artifact@v5.0.0
-       with:
-        name: directory_artifacts
-        path: artifacts/
-     - name: upload from multiple paths
-       uses: actions/upload-artifact@v5.0.0
-       with:
-         name: multiple_paths
-         path: |
-           ./myartifact.txt
-           artifacts/
-     - name: upload from multiple paths with exclusions
-       uses: actions/upload-artifact@v5.0.0
-       with:
-         name: multiple_paths_with_exclusions
-         path: |
-           ./myartifact.txt
-           artifacts/
-           !**/hostname.txt 
+    
 
   job2:
     name: JOB2
