@@ -61,7 +61,7 @@ jobs:
 
       - name: Referencing Repo Secrets
         run: |
-          echo: "[INFO] Application password is ${{ secrets.APP_PASSWORD }}"
+          echo "[INFO] Application password is ${{ secrets.APP_PASSWORD }}"
           
       - name: checking current directory download
         run: |
