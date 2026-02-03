@@ -56,7 +56,7 @@ jobs:
         
       - name: Referencing Environment variables
         run: |
-          echo "[INFO] Running Deployment for $ENC_TYPE with user $APP_USER."
+          echo "[INFO] Running Deployment for $ENV_TYPE with user $APP_USER."
           echo "[INFO] Once deployment application is accessible on $APP_PORT."
           
       - name: checking current directory download
