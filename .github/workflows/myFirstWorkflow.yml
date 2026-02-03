@@ -59,7 +59,7 @@ jobs:
       - name: Download single file artifact
         uses: actions/download-artifact@v5.0.0
         with:
-          name: sinlge_file
+          name: single_file
           path: artifacts/
       - name:
         run: |
