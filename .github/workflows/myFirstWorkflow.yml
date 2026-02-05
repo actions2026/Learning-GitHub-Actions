@@ -79,11 +79,13 @@ jobs:
           ls -ltr
 
   staging:
-    name: STAGIN DEPLOYMENT
+    name: STAGE DEPLOYMENT
     runs-on: ubuntu-latest
     steps:
       - name: Refrencing Env specif variables
         run: echo "[INFO] Running deployment on ${{ vars.HOST }} using ${{ vars.USER }}."
+      - name: Refrencing Env specif variables
+        run: echo "[INFO] Password for ${{ vars.USER }} using ${{ secrets.PASSWORD }}."
     environment:
       name: STAGING
 
