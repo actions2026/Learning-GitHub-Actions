@@ -88,7 +88,7 @@ jobs:
       name: STAGING
 
   production:
-    name: STAGE PRODUCTION
+    name: PRODUCTION DEPLOYMENT
     runs-on: ubuntu-latest
     steps:
       - name: Refrencing Env specif variables
