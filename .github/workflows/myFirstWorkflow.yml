@@ -79,7 +79,7 @@ jobs:
           ls -ltr
 
   staging:
-    name: STAGING DEPLOYMENT
+    name: STAGIN DEPLOYMENT
     runs-on: ubuntu-latest
     steps:
       - name: Refrencing Env specif variables
