@@ -99,7 +99,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Refrencing Env specif variables
-        run: echo "[INFO] Running deployment on ${{ vars.HOST }} using ${{ vars.USER }}.."
+        run: echo "[INFO] Running deployment on ${{ vars.HOST }} using ${{ vars.USER }}."
     environment:
       name: PRODUCTION
       
