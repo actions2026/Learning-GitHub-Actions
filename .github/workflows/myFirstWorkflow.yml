@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  ENV_TYPE: DEV
+  ENV_TYPE: DEVs
   APP_USER: thinknyx
   APP_PORT: 80
 
