@@ -77,6 +77,25 @@ jobs:
         run: |
           pwd
           ls -ltr
+
+  staging:
+    name: STAGE DEPLOYMENT
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refrencing Env specif variables
+        run: echo "[INFO]" Running deployment on ${{ vars.HOST }} using ${{ vars.USER }}."
+    environment:
+      name: STAGING
+
+  production:
+    name: STAGE PRODUCTION
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refrencing Env specif variables
+        run: echo "[INFO]" Running deployment on ${{ vars.HOST }} using ${{ vars.USER }}."
+    environment:
+      name: PRODUCTION
+      
          
   #    - name: Checkin OS Release for Github Hosted Runner
   #      run: cat /etc/os-release
