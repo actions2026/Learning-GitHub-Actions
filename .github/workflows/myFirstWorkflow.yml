@@ -112,7 +112,8 @@ jobs:
           file: ./Dockerfile
           push: false
           tags: thinknyx_app:${{ steps.vars.outputs.IMAGE_TAGS }} #we refrenece $GITHUB_OUTPUT value here
-      
+          load: true #this will load the built image into the local Docker cache, allowing us to save it as a tar file in the next step
+
       - name: Save Docker Image
         run: docker save thinknyx_app:${{ steps.vars.outputs.IMAGE_TAGS }} -o thinknyx_app.tar
 
