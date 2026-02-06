@@ -29,7 +29,7 @@ jobs:
           pytest --junitxml=reports/test-results.xml --cov=. --cov-report=xml --cov-report=term-missing -v 
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v5.0.0
+        uses: actions/upload-artifact@v5.0.0 #allows us to upload artifacts generated during the workflow, such as test reports, logs, or build outputs
         with:
           name: unit-test-reports
           path: reports/
@@ -37,14 +37,14 @@ jobs:
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
+    permissions: #locks down permissions for the workflow, only allowing what is necessary for the workflow to run
+      actions: read # Required to run the workflow, Allows the workflow to read the repository's code and metadata
+      contents: read #Allolows workflow to read repo files and clone repo
       security-events: write # Required to upload the results of the CodeQL analysis
     
     strategy: 
-      matrix:
-        language: ['python']
+      matrix: #FOR LOOP; this can be used to run the same job multiple times #Repetition if we have multiple values 
+        language: ['python'] 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5.0.0
@@ -67,5 +67,11 @@ jobs:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  
+      #Go to sonarqube check the quality gate info and update here, pass or fail the workflow based on the quality gate status
+      - name: Sonarqube Quality Gate Check
+        uses: SonarSource/sonarqube-quality-gate-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
