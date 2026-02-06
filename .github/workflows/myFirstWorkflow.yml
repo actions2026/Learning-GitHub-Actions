@@ -32,7 +32,7 @@ jobs:
         uses: actions/upload-artifact@v5.0.0 #allows us to upload artifacts generated during the workflow, such as test reports, logs, or build outputs
         with:
           name: unit-test-reports
-          path: reports/
+          path: reports/ #upload test results here
 
   codeql:
     name: CodeQL Analysis
@@ -71,7 +71,7 @@ jobs:
         uses: actions/download-artifact@v5.0.0
         with:
           name: unit-test-reports
-          path: reports/
+          path: reports/ #download those unit test results from previous job here
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
@@ -83,3 +83,38 @@ jobs:
         uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  build:
+    name: Build Image
+    runs-on: ubuntu-latest
+    needs: [codeql, sonarqube] #ensures that the build job only runs after the Sonar
+    if: success() 
+    #ensures that the build job only runs if the previous jobs (codeql and sonarqube) were successful
+    
+    outputs:
+      image-tag: ${{ steps.vars.outputs.IMAGE_TAGS }} #this allows us to reference the IMAGE_TAGS value saved in the $GITHUB_OUTPUT in other jobs if needed
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5.0.0
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3.0.0
+      - name: Generate Image tags
+        id: vars #we gave this step an ID so that we can reference it later in the workflow
+        run: | #github.run_id is a unique identifier for each workflow run, and GITHUB_SHA is the full commit SHA of the commit that triggered the workflow. We used the frst 7 characters. By using these two values, we can create a unique tag for our Docker image that includes both the run ID and a shortened version of the commit SHA.
+          IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}"  
+          echo "IMAGE_TAGS=$IMAGE_TAGS" >> $GITHUB_OUTPUT
+#We created a variable IMAGE_TAGS and saved into $GITHUB_OUTPUT so that we can reuse it
+#$GITHUB_OUTPUT is a special file in GitHub Actions that lets a step send output values to later steps in the same job.
+      - name: Build Image (no push)
+        uses: docker/build-push-action@v5.0.0
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: thinknyx_app:${{ steps.vars.outputs.IMAGE_TAGS }} #we refrenece $GITHUB_OUTPUT value here
+      
+      - name: Save Docker Image
+        run: docker save thinknyx_app:${{ steps.vars.outputs.IMAGE_TAGS }} -o thinknyx_app.tar
+
+      - name: Upload Docker Image
+        uses: actions/upload-artifact@v5.0.0
