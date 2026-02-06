@@ -117,5 +117,6 @@ jobs:
       - name: Save Docker Image
         run: docker save thinknyx_app:${{ steps.vars.outputs.IMAGE_TAGS }} -o thinknyx_app.tar
 
-      - name: Upload Docker Image
+      - name: Upload Docker Image Artifact
         uses: actions/upload-artifact@v5.0.0
+        path: thinknyx_app.tar
