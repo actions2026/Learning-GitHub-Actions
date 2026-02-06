@@ -32,7 +32,7 @@ jobs:
         uses: actions/upload-artifact@v5.0.0 #allows us to upload artifacts generated during the workflow, such as test reports, logs, or build outputs
         with:
           name: unit-test-reports
-          path: reports/ #upload test results here
+          path: reports/ #path to upload from
 
   codeql:
     name: CodeQL Analysis
@@ -71,7 +71,7 @@ jobs:
         uses: actions/download-artifact@v5.0.0
         with:
           name: unit-test-reports
-          path: reports/ #download those unit test results from previous job here
+          path: reports/ #download those unit test results from previous job here, works to download uploaded artifacts
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
@@ -118,5 +118,7 @@ jobs:
         run: docker save thinknyx_app:${{ steps.vars.outputs.IMAGE_TAGS }} -o thinknyx_app.tar
 
       - name: Upload Docker Image Artifact
-        uses: actions/upload-artifact@v5.0.0
-        path: thinknyx_app.tar
+        uses: actions/upload-artifact@4
+        with: 
+          name: thinknyx_app_image
+          path: thinknyx_app.tar
