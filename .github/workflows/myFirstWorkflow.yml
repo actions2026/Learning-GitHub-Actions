@@ -72,6 +72,6 @@ jobs:
   
       #Go to sonarqube check the quality gate info and update here, pass or fail the workflow based on the quality gate status
       - name: Sonarqube Quality Gate Check
-        uses: SonarSource/sonarqube-quality-gate-action@v2
+        uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
