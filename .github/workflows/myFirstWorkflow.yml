@@ -78,7 +78,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   
-      #Go to sonarqube check the quality gate info and update here, pass or fail the workflow based on the quality gate status
+      #This step fails or passes job based on Security Gate. Go to sonarqube check the quality gate info and update here, pass or fail the workflow based on the quality gate status
       - name: Sonarqube Quality Gate Check
         uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
         env:
@@ -92,7 +92,7 @@ jobs:
     #ensures that the build job only runs if the previous jobs (codeql and sonarqube) were successful
     
     outputs:
-      image-tag: ${{ steps.vars.outputs.IMAGE_TAGS }} #this allows us to reference the IMAGE_TAGS value saved in the $GITHUB_OUTPUT in other jobs if needed
+      image-tags: ${{ steps.vars.outputs.IMAGE_TAGS }} #this allows us to reference the IMAGE_TAGS value saved in the $GITHUB_OUTPUT in other jobs if needed
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5.0.0
@@ -103,7 +103,7 @@ jobs:
         run: | #github.run_id is a unique identifier for each workflow run, and GITHUB_SHA is the full commit SHA of the commit that triggered the workflow. We used the frst 7 characters. By using these two values, we can create a unique tag for our Docker image that includes both the run ID and a shortened version of the commit SHA.
           IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}"  
           echo "IMAGE_TAGS=$IMAGE_TAGS" >> $GITHUB_OUTPUT
-#We created a variable IMAGE_TAGS and saved into $GITHUB_OUTPUT so that we can reuse it
+#We created a variable IMAGE_TAGS and saved into $GITHUB_OUTPUT so that we can reuse it. Outputs variable in this step so other steps can use it.
 #$GITHUB_OUTPUT is a special file in GitHub Actions that lets a step send output values to later steps in the same job.
       - name: Build Image (no push)
         uses: docker/build-push-action@v5.0.0
