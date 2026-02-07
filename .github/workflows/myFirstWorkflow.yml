@@ -1,4 +1,4 @@
-name: my-first-workflow
+name: CI Pipleine using Resuable Workflow
 on:
   push:
     branches:
