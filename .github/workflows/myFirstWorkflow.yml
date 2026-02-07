@@ -1,5 +1,4 @@
 name: my-first-workflow
-
 on:
   push:
     branches:
@@ -8,9 +7,11 @@ on:
     branches:
       - main
 
-      permissions:
-        actions: read
-        security-events: write
+permissions:
+  actions: read
+  security-events: write
+  packages: write
+  contents: read
 
 jobs:
   ci-pipleine-job:
