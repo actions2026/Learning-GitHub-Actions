@@ -143,7 +143,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
-      - name: Tag Image
+      - name: Tag Image #we need to tag the image with the repository name before pushing to docker hub, we can use the same tag we generated in the build job. Repo name is in format of username/repository:tag
         run: |
           IMAGE_TAG="${{ needs.build.outputs.image-tags }}"
           docker image tag thinknyx_app:$IMAGE_TAG ${{ secrets.DOCKERHUB_USERNAME }}/thinknyx_app:$IMAGE_TAG
@@ -181,7 +181,7 @@ jobs:
       - name: Tag Image
         run: |
           IMAGE_TAG="${{ needs.build.outputs.image-tags }}"
-          docker image tag thinknyx_app:$IMAGE_TAG ghcr.io ${{ github.repository_owner }}/thinknyx_app:$IMAGE_TAG
+          docker image tag thinknyx_app:$IMAGE_TAG ghcr.io/${{ github.repository_owner }}/thinknyx_app:$IMAGE_TAG
           
       - name: Push Image
       #reference the same IMAGE_TAG now using needs.build.outputs.image-tags because we are in a different job, we need to use needs to reference the output value from the build job
