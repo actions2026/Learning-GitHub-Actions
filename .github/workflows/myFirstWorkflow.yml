@@ -8,9 +8,13 @@ on:
     branches:
       - main
 
+      permissions:
+        actions: read
+        security-events: write
+
 jobs:
   ci-pipleine-job:
-    uses: obalola14/resuable-workflows/.github/workflows/ci-pipeline.yml@main #location of the reusable workflow. Org/repo/worflow path@branch
+    uses: obalola14/reusable-workflows/.github/workflows/ci-pipeline.yml@main #location of the reusable workflow. Org/repo/worflow path@branch
     secrets: 
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with SonarCloud.
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with DockerHub.
