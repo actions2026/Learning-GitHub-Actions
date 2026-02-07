@@ -16,7 +16,7 @@ permissions:
 jobs:
   ci-pipleine-job:
     uses: obalola14/reusable-workflows/.github/workflows/ci-pipeline.yml@main #location of the reusable workflow. Org/repo/worflow path@branch
-    with:
+    with: #used to set arguments, like in actions
       run_codeql: true
       run_sonarqube: true
     secrets: 
