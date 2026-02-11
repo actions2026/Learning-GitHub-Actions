@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thinknyapp
+  labels:
+    app: thinknyapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: thinknyapp
+  template:
+    metadata:
+      labels:
+        app: thinknyapp
+    spec:
+      containers:
+      - name: thinknyapp
+        image: ghcr.io/actions2026/thinknyx_app:21920892675-7a44223
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            memory: "64Mi"
+            cpu: "50m"
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
