@@ -25,3 +25,13 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with SonarCloud.
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with DockerHub.
       DOCKERHUB_ACCESS_TOKEN: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with DockerHub.
+  
+  deploy_with_kubectl:
+    name: Deploy with kubectl
+    runs-on: ubuntu-latest
+    needs: ci-pipleine-job
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+        
