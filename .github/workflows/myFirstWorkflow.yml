@@ -28,7 +28,7 @@ jobs:
   
   deploy_with_kubectl:
     name: Deploy with kubectl
-    runs-on: ubuntu-latest
+    runs-on: github-action-scaleset-demo
     needs: ci-pipleine-job
     steps:
     - name: Checkout Repository
