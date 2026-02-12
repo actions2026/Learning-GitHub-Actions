@@ -31,7 +31,6 @@ jobs:
     uses: actions2026/reusable-workflows/.github/workflows/deploy-with-kubectl.yml@main #location of the reusable workflow. Org/repo/worflow path@branch
     with: #inputs needed
       ENVIRONMENT: STAGING
-      NAMESPACE: ${{ vars.NAMESPACE }}
       IMAGE_NAME: ghcr.io/actions2026/thinknyx_app
 
     secrets:
