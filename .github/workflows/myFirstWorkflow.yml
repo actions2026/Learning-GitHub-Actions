@@ -35,7 +35,53 @@ jobs:
 
     secrets:
       KUBECONFIG: ${{ secrets.KUBECONFIG }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with Kubernetes cluster.
-#     name: Deploy with kubectl
+
+  run-selenium-tests:
+    environment: STAGING
+    needs: deploy_with_kubectl
+    runs-on: github-actions-scaleset-demo
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v6
+    - name: Install Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.10'
+    - name: Install Google Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget gnupg ca-certificates
+        wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+
+    - name: Install Dependencies
+      run: |
+        pip install -r requirements-tests.txt
+
+    - name: Run Selenium Tests
+      env:
+        APP_BASE_URL: ${{ vars.APP_BASE_URL }}
+      run: |
+        pytest tests/ --html=reports/selenium-report.html --self-contained-html
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      #     name: Deploy with kubectl
 #     runs-on: github-actions-scaleset-demo
 #     needs: ci-pipleine-job
 #     steps:
