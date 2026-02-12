@@ -56,8 +56,8 @@ jobs:
     - name: update image name in deployment YAML
       run: |
         IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}"
-        IMAGE="ghcr.io/actions2026/thinknyx_app:${IMAGE_TAGS}"
+        export IMAGE="ghcr.io/actions2026/thinknyx_app:${IMAGE_TAGS}"
         yq e -i '.spec.template.spec.containers[0].image = strenv(IMAGE)' manifests/deployment.yaml  
         cat manifests/deployment.yaml
-####uses yaml query to filter and edit/replace field value in manifests/deployment.yaml file
+####uses yaml query to filter and edit/replace field value in manifests/deployment.yaml file with "IMAGE" env variable created
    
