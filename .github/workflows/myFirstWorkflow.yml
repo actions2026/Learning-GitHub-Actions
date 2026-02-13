@@ -65,7 +65,7 @@ jobs:
         APP_BASE_URL: ${{ vars.APP_BASE_URL }}
       run: |
         mkdir -p reports
-        pytest tests/ --html=reports/selenium-report.html --self-contained-html
+        pytest test_app.py --html=reports/selenium-report.html --self-contained-html
 
     - name: Upload Selenium Test Report
       uses: actions/upload-artifact@v5
