@@ -35,7 +35,31 @@ jobs:
 
     secrets:
       KUBECONFIG: ${{ secrets.KUBECONFIG }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with Kubernetes cluster.
-#     name: Deploy with kubectl
+
+  run-selenium-tests:
+
+    needs: deploy_with_kubectl
+    uses: actions2026/reusable-workflows/.github/workflows/run-selenium-tests.yml@main #location of the reusable workflow. Org/repo/worflow path@branch
+    with:
+      ENVIRONMENT: STAGING
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      #     name: Deploy with kubectl
 #     runs-on: github-actions-scaleset-demo
 #     needs: ci-pipleine-job
 #     steps:
