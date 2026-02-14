@@ -114,8 +114,7 @@ jobs:
     - name: update image name in Chart & values.yaml
       run: |
         export IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}"
-        export VERSION="0.1.0.-${IMAGE_TAGS}"
-        export IMAGE="ghcr.io/actions2026/thinknyx_app:${IMAGE_TAGS}"
+        export VERSION="0.1.0-${IMAGE_TAGS}"
         yq e -i '.image.tag = strenv(IMAGE_TAGS)' charts/values.yaml
         yq e -i '.appVersion = strenv(IMAGE_TAGS)' charts/Chart.yaml
         yq e -i '.version = strenv(VERSION)' charts/Chart.yaml        
