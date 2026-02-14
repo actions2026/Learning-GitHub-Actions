@@ -111,9 +111,9 @@ jobs:
         helm version
         yq --version
 
-    - name: update image name in Chart & values.yaml
+    - name: update image name in Chart & values.yaml #env variable created in shell is not automatically available in next steps because GHA uses a new shell for each step. 
       run: |
-        export IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}"
+        export IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}" 
         export VERSION="0.1.0-${IMAGE_TAGS}"
         yq e -i '.image.tag = strenv(IMAGE_TAGS)' charts/values.yaml
         yq e -i '.appVersion = strenv(IMAGE_TAGS)' charts/Chart.yaml
@@ -125,8 +125,20 @@ jobs:
     - name: Lint Chart  #lint is a helm command that checks the chart for any issues or errors
       run: helm lint charts/
 
-    - name: Package Helm Chart #package is a helm command that creates a .tgz file of the chart, using the folder, which can be used for deployment or distribution
+    - name: Package Helm Chart #package is a helm command that creates a .tgz file of the chart, using the folder. It names the .tgz packaged file with the name and version found in Chart.yaml. The package can be used for deployment or distribution
       run: |
         helm package charts/
         ls -ltr .
 
+    - name: Login to GHCR
+      run: |
+        echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+    - name: Push Helm Chart to GHCR
+      run: |
+        export IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}"
+        export VERSION="0.1.0-${IMAGE_TAGS}"
+        helm push thinknyxapp-${VERSION}.tgz oci://ghcr.io/actions2026/helm-charts
+
+    - name: Logout from GHCR
+      run: helm registry logout ghcr.io
