@@ -10,35 +10,39 @@ permissions:
   packages: write
   contents: read
 
+env:
+  OCI_REGISTRY: ghcr.io
+  OCI_REPOSITORY: ${{ github.repository_owner }}/helm-charts
+
 jobs:
-#   ci-pipleine-job:
-#     uses: actions2026/reusable-workflows/.github/workflows/ci-pipeline.yml@main #location of the reusable workflow. Org/repo/worflow path@branch
-#     with: #used to set arguments, like in actions
-#       run_codeql: true
-#       run_sonarqube: true
-#       run_build: true
-#       run_ghcr_publish: true
-#     secrets: 
-#       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with SonarCloud.
-#       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with DockerHub.
-#       DOCKERHUB_ACCESS_TOKEN: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with DockerHub.
+  ci-pipleine-job:
+    uses: actions2026/reusable-workflows/.github/workflows/ci-pipeline.yml@main #location of the reusable workflow. Org/repo/worflow path@branch
+    with: #used to set arguments, like in actions
+      run_codeql: true
+      run_sonarqube: true
+      run_build: true
+      run_ghcr_publish: true
+    secrets: 
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with SonarCloud.
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with DockerHub.
+      DOCKERHUB_ACCESS_TOKEN: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with DockerHub.
   
-#   deploy_with_kubectl:
-#     needs: ci-pipleine-job
-#     uses: actions2026/reusable-workflows/.github/workflows/deploy-with-kubectl.yml@main #location of the reusable workflow. Org/repo/worflow path@branch
-#     with: #inputs needed
-#       ENVIRONMENT: STAGING
-#       IMAGE_NAME: ghcr.io/actions2026/thinknyx_app
+  deploy_with_kubectl:
+    needs: ci-pipleine-job
+    uses: actions2026/reusable-workflows/.github/workflows/deploy-with-kubectl.yml@main #location of the reusable workflow. Org/repo/worflow path@branch
+    with: #inputs needed
+      ENVIRONMENT: STAGING
+      IMAGE_NAME: ghcr.io/actions2026/thinknyx_app
 
-#     secrets:
-#       KUBECONFIG: ${{ secrets.KUBECONFIG }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with Kubernetes cluster.
+    secrets:
+      KUBECONFIG: ${{ secrets.KUBECONFIG }} #passing the secret to the reusable workflow. This allows the reusable workflow to access the secret and use it for authentication when interacting with Kubernetes cluster.
 
-#   run-selenium-tests:
+  run-selenium-tests:
 
-#     needs: deploy_with_kubectl
-#     uses: actions2026/reusable-workflows/.github/workflows/run-selenium-tests.yml@main #location of the reusable workflow. Org/repo/worflow path@branch
-#     with:
-#       ENVIRONMENT: STAGING
+    needs: deploy_with_kubectl
+    uses: actions2026/reusable-workflows/.github/workflows/run-selenium-tests.yml@main #location of the reusable workflow. Org/repo/worflow path@branch
+    with:
+      ENVIRONMENT: STAGING
 
     
 
@@ -89,7 +93,9 @@ jobs:
 # #         yq e -i '.spec.template.spec.containers[0].image = strenv(IMAGE)' manifests/deployment.yaml  
 # #         cat manifests/deployment.yaml
 # # ####uses yaml query to filter and edit/replace field value in manifests/deployment.yaml file with "IMAGE" env variable created
+
    publish-helm-chart:
+    needs: run-selenium-tests
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repository
@@ -132,13 +138,13 @@ jobs:
 
     - name: Login to GHCR
       run: |
-        echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+        echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.OCI_REGISTRY }} -u ${{ github.actor }} --password-stdin
 
     - name: Push Helm Chart to GHCR
       run: |
         export IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}"
         export VERSION="0.1.0-${IMAGE_TAGS}"
-        helm push thinknyxapp-${VERSION}.tgz oci://ghcr.io/actions2026/helm-charts
+        helm push thinknyxapp-${VERSION}.tgz oci://${{ env.OCI_REGISTRY }}/${{ env.OCI_REPOSITORY }}
 
     - name: Logout from GHCR
-      run: helm registry logout ghcr.io
+      run: helm registry logout ${{ env.OCI_REGISTRY }}
