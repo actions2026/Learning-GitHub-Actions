@@ -101,13 +101,33 @@ jobs:
       with:
         version: v3.12.0
 
+    - name: Install yq
+      run: |
+        sudo curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq
+        sudo chmod +x /usr/local/bin/yq
+
     - name: Check Helm Version
-      run: helm version
+      run: |
+        helm version
+        yq --version
+
+    - name: update image name in Chart & values.yaml
+      run: |
+        export IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}"
+        export VERSION="0.1.0.${IMAGE_TAGS}"
+        export IMAGE="ghcr.io/actions2026/thinknyx_app:${IMAGE_TAGS}"
+        yq e -i '.image.tag = strenv(IMAGE_TAGS)' charts/values.yaml
+        yq e -i '.appVersion = strenv(VERSION)' charts/Chart.yaml
+        yq e -i '.version = strenv(VERSION)' charts/Chart.yaml        
+        cat charts/values.yaml
+        cat charts/Chart.yaml
+        
 
     - name: Lint Chart  #lint is a helm command that checks the chart for any issues or errors
       run: helm lint charts/
 
-    - name: Package Helm Chart
+    - name: Package Helm Chart #package is a helm command that creates a .tgz file of the chart, using the folder, which can be used for deployment or distribution
       run: |
         helm package charts/
         ls -ltr .
+
