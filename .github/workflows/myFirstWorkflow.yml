@@ -1,8 +1,5 @@
 name: CI Pipleine using Resuable Workflow.
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
