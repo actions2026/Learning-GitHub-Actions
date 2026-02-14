@@ -103,3 +103,6 @@ jobs:
 
     - name: Check Helm Version
       run: helm version
+
+    - name: Lint Chart  #lint is a helm command that checks the chart for any issues or errors
+      run: helm lint charts/
