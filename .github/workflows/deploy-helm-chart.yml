@@ -1,7 +1,7 @@
 name: Deploy Helm Chart in Kubernetes Cluster
 on:
   pull_request:
-    types: [closed] # Trigger the workflow only when a pull request is closed
+    types: [closed] # Trigger the workflow only when a pull request is closed and in main branch
     branches: [ main ]
 
 permissions:
@@ -16,7 +16,8 @@ jobs:
   deploy-helm-chart:
     environment: PRODUCTION
     runs-on: github-actions-scaleset-demo
-    if: github.event.pull_request.merged == true # Ensure the workflow runs only when the pull request is merged
+    if: github.event.pull_request.merged == true 
+    # Ensure the workflow runs only when the pull request is merged
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v5
@@ -27,10 +28,11 @@ jobs:
       
     - name: Login to GHCR
       run: |
-        echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.OCI_REGISTRY }} -u ${{ github.actor }} --password-stdin
+        echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ env.OCI_REGISTRY }} -u ${{ github.actor }} --password-stdin
 
     - name: Configure Kubeconfig
       run: |
+        mkdir -p $HOME/.kube
         echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
         chmod 600 $HOME/.kube/config
 
