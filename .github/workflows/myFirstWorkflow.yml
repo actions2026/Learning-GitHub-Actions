@@ -3,12 +3,14 @@ on:
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - HELMCHART-VERSION #ignore changes to HELMCHART-VERSION file to avoid triggering workflow when pushing updated version back to repo.
 
 permissions:
   actions: read
   security-events: write
   packages: write
-  contents: read
+  contents: write
 
 env:
   OCI_REGISTRY: ghcr.io
@@ -99,7 +101,20 @@ jobs:
     - name: Logout from GHCR
       run: helm registry logout ${{ env.OCI_REGISTRY }}
 
+    - name: Update HelmChart Version in Repo
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@github.com"
+        git fetch origin ${{ github.head_ref }}
+        git reset --hard origin/${{ github.head_ref }}
+        export IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}"
+        export VERSION="0.1.0-${IMAGE_TAGS}"
+        echo "VERSION=\"${VERSION}\"" >> HELMCHART-VERSION
+        git add HELMCHART-VERSION
+        git commit -m "Update Helm Chart version to ${VERSION}"
+        git push origin ${{ github.head_ref }}
 
+ #reset the local branch to match the remote branch, ensuring that any changes made locally in previous steps (like updating the Helm chart version) do not cause conflicts when pushing the new version back to the repository.
 
 #       #     name: Deploy with kubectl
 # #     runs-on: github-actions-scaleset-demo

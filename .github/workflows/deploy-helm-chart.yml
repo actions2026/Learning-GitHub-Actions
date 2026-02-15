@@ -16,7 +16,7 @@ jobs:
   deploy-helm-chart:
     environment: PRODUCTION
     runs-on: github-actions-scaleset-demo
-    if: github-action.event.pull_request.merged == true # Ensure the workflow runs only when the pull request is merged
+    if: github.event.pull_request.merged == true # Ensure the workflow runs only when the pull request is merged
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v5
@@ -29,6 +29,20 @@ jobs:
       run: |
         echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.OCI_REGISTRY }} -u ${{ github.actor }} --password-stdin
 
+    - name: Configure Kubeconfig
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+
+    - name: Reading HELMCHART-VERSION
+      id: read_version
+      run: |
+        source HELMCHART-VERSION
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "Deploying Helm Chart version: $VERSION"
+#        VERSION=$(cat HELMCHART-VERSION)
+#        echo "HELM_CHART_VERSION=$VERSION" >> $GITHUB_ENV
+
     - name: Deploy Helm Chart
       run: |
-        helm upgrade --install thinknyxapp oci://${{ env.OCI_REGISTRY }}/${{ env.OCI_REPOSITORY }}/thinknyxapp --namespace ${{ vars.NAMESPACE }} --create-namespace --wait
+        helm upgrade --install thinknyxapp oci://${{ env.OCI_REGISTRY }}/${{ env.OCI_REPOSITORY }}/thinknyxapp --version ${{ env.VERSION }} --namespace ${{ vars.NAMESPACE }} --create-namespace --wait
