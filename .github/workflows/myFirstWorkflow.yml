@@ -1,17 +1,20 @@
 name: CI Pipleine using Resuable Workflow.
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - HELMCHART-VERSION #ignore changes to HELMCHART-VERSION file to avoid triggering workflow when pushing updated version back to repo.
 
 permissions:
   actions: read
   security-events: write
   packages: write
-  contents: read
+  contents: write
+
+env:
+  OCI_REGISTRY: ghcr.io
+  OCI_REPOSITORY: ${{ github.repository_owner }}/helm-charts
 
 jobs:
   ci-pipleine-job:
@@ -43,53 +46,111 @@ jobs:
     with:
       ENVIRONMENT: STAGING
 
-    
+  publish-helm-chart:
+    needs: run-selenium-tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v5
+
+    - name: Set up Helm
+      uses: azure/setup-helm@v3
+
+      with:
+        version: v3.12.0
+
+    - name: Install yq
+      run: |
+        sudo curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq
+        sudo chmod +x /usr/local/bin/yq
+
+    - name: Check Helm Version
+      run: |
+        helm version
+        yq --version
+
+    - name: update image name in Chart & values.yaml #env variable created in shell is not automatically available in next steps because GHA uses a new shell for each step. 
+      run: |
+        export IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}" 
+        export VERSION="0.1.0-${IMAGE_TAGS}"
+        yq e -i '.image.tag = strenv(IMAGE_TAGS)' charts/values.yaml
+        yq e -i '.appVersion = strenv(IMAGE_TAGS)' charts/Chart.yaml
+        yq e -i '.version = strenv(VERSION)' charts/Chart.yaml        
+        cat charts/values.yaml
+        cat charts/Chart.yaml
+        
+
+    - name: Lint Chart  #lint is a helm command that checks the chart for any issues or errors
+      run: helm lint charts/
+
+    - name: Package Helm Chart #package is a helm command that creates a .tgz file of the chart, using the folder. It names the .tgz packaged file with the name and version found in Chart.yaml. The package can be used for deployment or distribution
+      run: |
+        helm package charts/
+        ls -ltr .
+
+    - name: Login to GHCR
+      run: |
+        echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.OCI_REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+    - name: Push Helm Chart to GHCR
+      run: |
+        export IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}"
+        export VERSION="0.1.0-${IMAGE_TAGS}"
+        helm push thinknyxapp-${VERSION}.tgz oci://${{ env.OCI_REGISTRY }}/${{ env.OCI_REPOSITORY }}
+
+    - name: Logout from GHCR
+      run: helm registry logout ${{ env.OCI_REGISTRY }}
+
+    - name: Update HelmChart Version in Repo
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@github.com"
+        git fetch origin ${{ github.head_ref }}
+        git reset --hard origin/${{ github.head_ref }}
+        export IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}"
+        export VERSION="0.1.0-${IMAGE_TAGS}"
+        echo "VERSION=\"${VERSION}\"" >> HELMCHART-VERSION
+        git add HELMCHART-VERSION
+        git commit -m "Update Helm Chart version to ${VERSION}"
+        git push origin HEAD:${{ github.head_ref }}
+
+#reset the local branch to match the remote branch, ensuring that any changes made locally in previous steps (like updating the Helm chart version) do not cause conflicts when pushing the new version back to the repository.
+#Once helm chart is pushed to GHCR, we update the HELMCHART-VERSION file with the new version and push it back to the repo. This will trigger the workflow again if we don't ignore changes to HELMCHART-VERSION file in the workflow trigger. Hence, we added paths-ignore in the workflow trigger to avoid triggering workflow when pushing updated version back to repo.
+#The workflow deploy-helm-chart.yml is configured to trigger only when a pull request is closed and merged into main branch. So, when we push the updated version back to repo, it will not trigger the deploy-helm-chart workflow because it's not a pull request merge, it's just a push to the branch. This allows us to update the version in the repo without causing an infinite loop of workflow triggers.
 
 
 
 
+#       #     name: Deploy with kubectl
+# #     runs-on: github-actions-scaleset-demo
+# #     needs: ci-pipleine-job
+# #     steps:
+# #     - name: Checkout Repository
+# #       uses: actions/checkout@v3
 
+# #     - name: Install kubectl
+# #       run: |
+# #         curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+# #         chmod +x ./kubectl
+# #         sudo mv ./kubectl /usr/local/bin/kubectl
+# #         kubectl version --client
+# #     - name: Configure kubectl
+# #       run: |
+# #         mkdir -p $HOME/.kube
+# #         echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+# #         kubectl version
+# #         kubectl get nodes
 
+# #     - name: Install yq
+# #       run: |
+# #         sudo curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq
+# #         sudo chmod +x /usr/local/bin/yq
+# #         yq --version
 
-
-
-
-
-
-
-
-
-      #     name: Deploy with kubectl
-#     runs-on: github-actions-scaleset-demo
-#     needs: ci-pipleine-job
-#     steps:
-#     - name: Checkout Repository
-#       uses: actions/checkout@v3
-
-#     - name: Install kubectl
-#       run: |
-#         curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-#         chmod +x ./kubectl
-#         sudo mv ./kubectl /usr/local/bin/kubectl
-#         kubectl version --client
-#     - name: Configure kubectl
-#       run: |
-#         mkdir -p $HOME/.kube
-#         echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
-#         kubectl version
-#         kubectl get nodes
-
-#     - name: Install yq
-#       run: |
-#         sudo curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq
-#         sudo chmod +x /usr/local/bin/yq
-#         yq --version
-
-#     - name: update image name in deployment YAML
-#       run: |
-#         IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}"
-#         export IMAGE="ghcr.io/actions2026/thinknyx_app:${IMAGE_TAGS}"
-#         yq e -i '.spec.template.spec.containers[0].image = strenv(IMAGE)' manifests/deployment.yaml  
-#         cat manifests/deployment.yaml
-# ####uses yaml query to filter and edit/replace field value in manifests/deployment.yaml file with "IMAGE" env variable created
-   
+# #     - name: update image name in deployment YAML
+# #       run: |
+# #         IMAGE_TAGS="${{ github.run_id }}-${GITHUB_SHA::7}"
+# #         export IMAGE="ghcr.io/actions2026/thinknyx_app:${IMAGE_TAGS}"
+# #         yq e -i '.spec.template.spec.containers[0].image = strenv(IMAGE)' manifests/deployment.yaml  
+# #         cat manifests/deployment.yaml
+# # ####uses yaml query to filter and edit/replace field value in manifests/deployment.yaml file with "IMAGE" env variable created
