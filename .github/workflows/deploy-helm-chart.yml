@@ -1,0 +1,34 @@
+name: Deploy Helm Chart in Kubernetes Cluster
+on:
+  pull_request:
+    types: [closed] # Trigger the workflow only when a pull request is closed
+    branches: [ main ]
+
+permissions:
+  contents: read
+  packages: read
+
+env:
+  OCI_REGISTRY: ghcr.io
+  OCI_REPOSITORY: ${{ github.repository_owner }}/helm-charts
+
+jobs:
+  deploy-helm-chart:
+    environment: PRODUCTION
+    runs-on: github-actions-scaleset-demo
+    if: github-action.event.pull_request.merged == true # Ensure the workflow runs only when the pull request is merged
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v5
+    - name: Set up Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: v3.12.0
+      
+    - name: Login to GHCR
+      run: |
+        echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.OCI_REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+    - name: Deploy Helm Chart
+      run: |
+        helm upgrade --install thinknyxapp oci://${{ env.OCI_REGISTRY }}/${{ env.OCI_REPOSITORY }}/thinknyxapp --namespace ${{ vars.NAMESPACE }} --create-namespace --wait
